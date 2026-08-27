@@ -1,50 +1,139 @@
-//run debug mode
+# Playwright E2E Test Suite
+
+This project contains end-to-end browser tests for the application under test, built with Playwright and TypeScript.
+
+## Overview
+
+The suite is organized around a clear separation of responsibilities:
+
+- `e2e/` contains the actual test specs
+- `pages/` contains page object classes for page-specific UI behaviors
+- `component/` contains reusable UI component logic
+- `utils/` contains reusable helpers and assertion utilities
+- `fixtures/` contains shared test fixtures
+- `auth/` contains authentication state used by the setup flow
+
+This structure keeps tests readable, reusable, and easier to maintain.
+
+## Prerequisites
+
+Before running the tests, make sure you have:
+
+- Node.js installed
+- npm installed
+
+## Installation
+
+```bash
+npm install
+```
+
+## Running tests
+
+Run the full suite:
+
+```bash
+npx playwright test
+```
+
+Run a specific test file:
+
+```bash
+npx playwright test e2e/overview.spec.ts
+```
+
+Run a specific browser project:
+
+```bash
+npx playwright test --project=chromium
+```
+
+Run tests in UI mode:
+
+```bash
+npx playwright test --ui
+```
+
+Run tests in headed mode:
+
+```bash
+npx playwright test --headed
+```
+
+Debug a test:
+
+```bash
 npx playwright test --debug
+```
 
-//run specific browser
-npx playwright test --
+Open the HTML report:
 
-| Command                                       | What you get                  |
-| --------------------------------------------- | ----------------------------- |
-| `npx playwright test --ui`                    | Playwright Test UI            |
-| `npx playwright test --ui --project=chromium` | Playwright UI, Chromium tests |
-| `npx playwright test --headed`                | Actual browser window         |
-| `npx playwright test --ui --headed`           | UI Mode + headed browser      |
+```bash
+npx playwright show-report
+```
 
+## Auth setup flow
 
-Setup based on auth.setup.ts
+Authentication is handled through the setup flow defined in `e2e/auth.setup.ts`.
 
+The setup process runs first and prepares an authenticated session, which is then reused by browser projects during test execution.
+
+Example flow:
+
+```text
 setup project
-    │
-    │ runs first
-    ▼
-auth.setup.ts
-    │
-    │ creates admin.json
-    ▼
-chromium project
-    │
-    ▼
-sample.spec.ts
+  -> auth.setup.ts
+  -> creates auth state (for example, admin.json)
+  -> chromium project runs tests using that auth state
+```
 
+## Project structure
 
-A good mental model is:
+```text
+.
+├── auth/                 # Stored auth/session state
+├── component/            # Reusable UI component helpers
+├── e2e/                  # End-to-end test specs
+├── fixtures/             # Shared fixtures and setup utilities
+├── pages/                # Page Object Model classes
+├── utils/                # Assertion helpers and generic utilities
+├── playwright.config.ts  # Playwright configuration
+├── package.json          # Project scripts and dependencies
+├── readme.md             # Project documentation
+├── tsconfig.json         # TypeScript configuration
+└── playwright-report/    # Generated Playwright HTML reports
+```
 
-Components = reusable UI behavior.
-Utils = reusable non-UI helper logic.
-Pages = page-specific UI behavior.
+## Testing conventions
 
+A good mental model for this repo is:
 
-That gives you a very clear separation:
+- `pages/` = how to interact with a specific page
+- `component/` = how to interact with reusable UI components
+- `utils/` = generic helper logic and assertion utilities
+- `e2e/` = the business workflows being validated
 
-pages/
+This separation helps keep tests maintainable and reduces duplication.
 
-How do I interact with this specific page?
+## Troubleshooting
 
-components/
+If a test fails unexpectedly:
 
-How do I interact with this reusable UI component?
+- confirm the app is running and reachable
+- verify the auth state is valid
+- check the browser/project configuration in `playwright.config.ts`
+- review the Playwright trace and HTML report for failed runs
 
-utils/
+## Notes
 
-What generic helper functionality do I need?
+This project uses Playwright's test runner with a structured layout for page objects, authentication, utilities, and reusable assertions. The goal is to make test flows clear, modular, and easy to extend as the application grows.
+
+## Quick reference
+
+| Command | What it does |
+| --- | --- |
+| `npx playwright test --ui` | Opens Playwright UI mode |
+| `npx playwright test --ui --project=chromium` | UI mode for Chromium tests |
+| `npx playwright test --headed` | Runs tests in a visible browser window |
+| `npx playwright test --debug` | Debug a test interactively |
+| `npx playwright show-report` | Opens the generated HTML report |
