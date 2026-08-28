@@ -115,6 +115,98 @@ A good mental model for this repo is:
 
 This separation helps keep tests maintainable and reduces duplication.
 
+## Playwright locator reference
+
+### `locator.filter()`
+
+`filter()` narrows an existing locator. It returns another locator, so it can be chained with other locator methods.
+
+```ts
+const emailHeader = table
+  .locator('thead th')
+  .filter({ hasText: /^\s*Email\s*$/ });
+```
+
+The available filter options are:
+
+| Option | Purpose | Example |
+| --- | --- | --- |
+| `hasText` | Keeps elements containing the given text or matching regular expression | `.filter({ hasText: 'Active' })` |
+| `hasNotText` | Keeps elements that do not contain the given text | `.filter({ hasNotText: 'Archived' })` |
+| `has` | Keeps elements containing a matching descendant locator | `.filter({ has: page.getByRole('button', { name: 'Edit' }) })` |
+| `hasNot` | Keeps elements that do not contain a matching descendant locator | `.filter({ hasNot: page.locator('.error') })` |
+| `visible` | Keeps visible or hidden elements | `.filter({ visible: true })` |
+
+Example using `has` to find the correct card before clicking its button:
+
+```ts
+const productCard = page
+  .locator('.product-card')
+  .filter({ hasText: 'Laptop' });
+
+await productCard.getByRole('button', { name: 'Add to cart' }).click();
+```
+
+Filters can be chained:
+
+```ts
+const activeUser = page
+  .locator('tr')
+  .filter({ hasText: 'John' })
+  .filter({ hasText: 'Active' });
+```
+
+### `locator.evaluate()`
+
+`evaluate()` runs a JavaScript function in the browser page using the element matched by the locator. It is useful for reading DOM information that does not have a direct Playwright locator method.
+
+```ts
+const button = page.getByRole('button', { name: 'Save' });
+
+const className = await button.evaluate(element => element.className);
+const tagName = await button.evaluate(element => element.tagName);
+const testId = await button.evaluate(element =>
+  element.getAttribute('data-testid')
+);
+```
+
+It can also calculate values from the DOM:
+
+```ts
+const width = await button.evaluate(element =>
+  element.getBoundingClientRect().width
+);
+```
+
+Values can be passed into the browser function as the second argument:
+
+```ts
+const expectedClass = 'primary';
+
+const hasClass = await button.evaluate(
+  (element, className) => element.classList.contains(className),
+  expectedClass
+);
+```
+
+In `utils/assertions/FieldAssertions.ts`, `evaluate()` finds a table header's position so the matching cell can be selected from the first data row.
+
+For normal checks, prefer Playwright's built-in locators and assertions because they automatically wait and retry:
+
+```ts
+await expect(button).toHaveText('Save');
+await expect(button).toBeDisabled();
+```
+
+Use `evaluate()` when custom browser-side DOM logic is genuinely needed. The callback should return values that can be transferred from the browser, such as strings, numbers, booleans, arrays, or plain objects.
+
+Official documentation:
+
+- [Locator filtering](https://playwright.dev/docs/locators#filtering-locators)
+- [Locator API: `filter()`](https://playwright.dev/docs/api/class-locator#locator-filter)
+- [Locator API: `evaluate()`](https://playwright.dev/docs/api/class-locator#locator-evaluate)
+- [Evaluating JavaScript](https://playwright.dev/docs/evaluating)
+
 ## Troubleshooting
 
 If a test fails unexpectedly:
