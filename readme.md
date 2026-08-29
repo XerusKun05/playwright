@@ -87,6 +87,49 @@ setup project
   -> chromium project runs tests using that auth state
 ```
 
+## Key Terminology
+
+Understanding these terms helps when working with Playwright fixtures and tests:
+
+### Framework & Testing
+- **`test`** — The Playwright test framework/runner. This is the object you call to define and execute tests. In this project, it's extended with custom fixtures.
+- **`expect`** — An assertion library (not a framework). Used within tests to validate that results match expectations.
+  ```ts
+  test('my test', async () => {
+      expect(value).toBe(true);  // expect validates the result
+  });
+  ```
+
+### Fixtures
+- **Fixture** — A reusable setup/teardown mechanism for tests. Fixtures run before each test and clean up after.
+  - **Setup phase** — Runs before the test to prepare resources
+  - **Use phase** — The test itself runs here
+  - **Teardown phase** — Runs after the test to clean up resources
+
+### Type System
+- **Type** — A TypeScript definition that describes the shape of an object. Example: `type ApiFixtures = { apiRequest: APIRequestContext }`
+- **Generic** — A placeholder for a type. Example: `base.extend<ApiFixtures>` — the `<ApiFixtures>` is a generic specifying what type of fixtures are being added
+- **Property** — A named item within a type. Example: in `type ApiFixtures = { apiRequest: ... }`, `apiRequest` is the property name
+
+### Contexts
+- **Context** — An isolated browser or API session with its own cookies, storage, and state. Multiple contexts can run simultaneously without interfering.
+  - **Browser context** — Isolated session for browser automation (like an incognito window)
+  - **API request context** — Isolated session for HTTP API requests with its own authentication and base URL
+
+### Key Matching Rule
+When defining fixtures, the **property name in the type must match the property name in the implementation**:
+```ts
+type ApiFixtures = {
+    apiRequest: APIRequestContext;  // Property name
+};
+
+export const test = base.extend<ApiFixtures>({
+    apiRequest: async ({}, use) => {  // MUST match the type property name
+        // implementation
+    },
+});
+```
+
 ## Project structure
 
 ```text
