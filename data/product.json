@@ -1,0 +1,25 @@
+{
+	"data": {
+		"name": "NOVA Wireless Noise-Cancelling Headphones",
+		"grossWeightUnit": "g",
+		"dimensionUnit": "cm",
+		"isForBuying": true,
+		"isForSelling": true,
+		"hasBom": false,
+		"stockType": "regul",
+		"vatType": "twelv",
+		"ewt": "1.000000",
+		"attributeCount": 0,
+		"accountName": 47,
+		"revenueAccountName": 49,
+		"unit": 1,
+		"variants": {
+			"0": {
+				"isEnabled": true,
+				"sku": "NOVA-NC-BLK",
+				"buyingPrice": "2850.000000",
+				"sellingPrice": "4995.000000"
+			}
+		}
+	}
+}

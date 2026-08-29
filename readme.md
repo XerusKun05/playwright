@@ -272,3 +272,6 @@ This project uses Playwright's test runner with a structured layout for page obj
 | `npx playwright test --headed` | Runs tests in a visible browser window |
 | `npx playwright test --debug` | Debug a test interactively |
 | `npx playwright show-report` | Opens the generated HTML report |
+
+
+"Refactor this Playwright code to follow the architecture and coding patterns used in my existing tests. Use Page Object methods where available, reusable components such as FancySelect, and reusable assertions. Don't create new abstractions unless necessary."

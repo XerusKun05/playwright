@@ -1,60 +1,69 @@
-import { test, expect } from '@playwright/test';
+import productData from '../data/product.json';
+import { test, expect } from '../fixtures/api.fixture';
 import { ProductPage } from '../pages/ProductPage';
 
-test('user can access create product page', async ({ page }) => {
+test('user can create a product', async ({ page, apiRequest }) => {
 
+    const product = productData.data;
+    const variant = product.variants['0'];
     const productPage = new ProductPage(page);
 
-    await productPage.goto();
+    await test.step('Check that the product name is available', async () => {
+        const response = await apiRequest.get('/product', {
+            params: {
+                searchQuery: product.name,
+            },
+        });
 
-    await expect(productPage.productName).toBeVisible();
-    await productPage.enterProductName('Test Product 1');
-    await productPage.selectStockType('regular');
-    await productPage.selectProductType(true, true);
+        expect(response.ok()).toBeTruthy();
 
-    await expect(productPage.regularStock).toBeChecked();
-    await expect(productPage.forBuying).toBeChecked();
-    await expect(productPage.forSelling).toBeChecked();
+        const result = await response.json();
+        expect(result.rows).toHaveLength(0);
+        expect(result.count).toBe(0);
+    });
 
-    await productPage.unit.fancySelect('Piece (pc)');
-    await productPage.inventoryAccount.fancySelect('Merchandise Inventory');
-    await productPage.revenueAccountName.fancySelect('Sales');
+    await test.step('Open the create product page', async () => {
+        await productPage.goto();
+        await expect(productPage.productName).toBeVisible();
+    });
 
-    await productPage.enterSKU('TEST-001');
-    await productPage.enterBuyingPrice('100');
-    await productPage.enterSellingPrice('150');
+    await test.step('Enter the product details', async () => {
+        await productPage.enterProductName(product.name);
+        await productPage.selectStockType('regular');
+        await productPage.selectProductType(true, true);
 
-    await productPage.save();
+        await productPage.unit.fancySelect('Piece (pc)');
+        await productPage.inventoryAccount.fancySelect('Merchandise Inventory');
+        await productPage.revenueAccountName.fancySelect('Sales');
 
-    // await productPage.assertions
-    //     .assertField('Name', 'Test Product 1')
-    //     .assertField('Stock Type', 'Regular')
-    //     .assertField('Buying', 'Yes')
-    //     .assertField('Selling', 'Yes')
-    //     .assertField('Unit', 'Piece (pc)')
-    //     .assertField('Inventory Account', 'Merchandise Inventory')
-    //     .assertField('Revenue Account Name', 'Sales')
-    //     .assertField('SKU', 'TEST-001')
-    //     .assertField('Buying Price', '100.00')
-    //     .assertField('Selling Price', '150.00');
+        await productPage.enterSKU(variant.sku);
+        await productPage.enterBuyingPrice(variant.buyingPrice);
+        await productPage.enterSellingPrice(variant.sellingPrice);
+    });
 
-    await productPage.assertions.assertFields([
-        ['Name', 'Test Product 1'],
-        ['Stock Type', 'Regular'],
-        ['Product Type', 'For Buying, For Selling'],
-        //  ['Selling', 'Yes'],
-        ['Unit', 'Piece (pc)'],
-        ['Inventory Account Name', 'Merchandise Inventory'],
-        ['Revenue Account Name', 'Sales'],
-        //   ['SKU', 'TEST-001'],
-        //  ['Buying Price', '100.00'],
-        //  ['Selling Price', '150.00'],
-    ]);
+    await test.step('Verify the selected product options', async () => {
+        await expect(productPage.regularStock).toBeChecked();
+        await expect(productPage.forBuying).toBeChecked();
+        await expect(productPage.forSelling).toBeChecked();
+    });
 
-    await productPage.assertions.assertTableField(
-        productPage.productDetailsTable,
-        'SKU',
-        'TEST-001'
-    );
+    await test.step('Save and verify the created product', async () => {
+        await productPage.save();
+
+        await productPage.assertions.assertFields([
+            ['Name', product.name],
+            ['Stock Type', 'Regular'],
+            ['Product Type', 'For Buying, For Selling'],
+            ['Unit', 'Piece (pc)'],
+            ['Inventory Account Name', 'Merchandise Inventory'],
+            ['Revenue Account Name', 'Sales'],
+        ]);
+
+        await productPage.assertions.assertTableField(
+            productPage.productDetailsTable,
+            'SKU',
+            variant.sku
+        );
+    });
 
 });
