@@ -4,12 +4,15 @@ import { ProductPage } from '../pages/ProductPage';
 
 test('user can create a product', async ({ page, apiRequest }) => {
 
+    const uniqueId = Date.now();
     const product = {
         ...productData.data,
-        name: `${productData.data.name} ${Date.now()}`,
+        name: `${productData.data.name} ${uniqueId}`,
     };
-    
-    const variant = product.variants['0'];
+    const variant = {
+        ...product.variants['0'],
+        sku: `${product.variants['0'].sku}-${uniqueId}`,
+    };
     const productPage = new ProductPage(page);
 
     await test.step('Check that the product name is available', async () => {
