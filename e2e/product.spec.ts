@@ -4,7 +4,11 @@ import { ProductPage } from '../pages/ProductPage';
 
 test('user can create a product', async ({ page, apiRequest }) => {
 
-    const product = productData.data;
+    const product = {
+        ...productData.data,
+        name: `${productData.data.name} ${Date.now()}`,
+    };
+    
     const variant = product.variants['0'];
     const productPage = new ProductPage(page);
 
